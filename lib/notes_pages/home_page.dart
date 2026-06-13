@@ -4,9 +4,11 @@ import 'package:firebase_notes_app/notes_bloc/notes_bloc.dart';
 import 'package:firebase_notes_app/notes_bloc/notes_event.dart';
 import 'package:firebase_notes_app/notes_bloc/notes_state.dart';
 import 'package:firebase_notes_app/notes_pages/add_notes_page.dart';
+import 'package:firebase_notes_app/notes_pages/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,10 +18,25 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String userId = "";
+
+  String filterType = AppNotesConstants.created_at;
+
   @override
   void initState() {
     super.initState();
-    context.read<NotesBloc>().add(FetchNotesEvent());
+    getUid();
+  }
+
+  Future<void> getUid() async {
+    SharedPreferences myPref = await SharedPreferences.getInstance();
+    setState(() {
+      userId = myPref.getString(AppUserConstants.user_id) ?? "";
+
+      context.read<NotesBloc>().add(
+        FetchNotesEvent(userId: userId, filterType: filterType),
+      );
+    });
   }
 
   DateFormat myDf = DateFormat.yMMMMEEEEd();
@@ -29,9 +46,62 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Home Page"),
-        centerTitle: true,
         backgroundColor: Colors.blueAccent,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProfilePage(userId: userId),
+                ),
+              );
+            },
+            icon: Icon(Icons.person_outline),
+          ),
+          SizedBox(width: 15),
+          SizedBox(
+            width: 180,
+            child: DropdownButtonFormField(
+              initialValue: AppNotesConstants.created_at,
+              decoration: InputDecoration(
+                fillColor: Colors.white,
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              items: [
+                DropdownMenuItem(
+                  value: AppNotesConstants.created_at,
+                  onTap: () {
+                    setState(() {
+                      filterType = AppNotesConstants.created_at;
+                      context.read<NotesBloc>().add(
+                        FetchNotesEvent(userId: userId, filterType: filterType),
+                      );
+                    });
+                  },
+                  child: Text("Created At"),
+                ),
+                DropdownMenuItem(
+                  value: AppNotesConstants.updated_at,
+                  onTap: () {
+                    setState(() {
+                      filterType = AppNotesConstants.updated_at;
+                      context.read<NotesBloc>().add(
+                        FetchNotesEvent(userId: userId, filterType: filterType),
+                      );
+                    });
+                  },
+                  child: Text("Date Modified"),
+                ),
+              ],
+              onChanged: (value) {},
+            ),
+          ),
+        ],
       ),
       body: BlocBuilder<NotesBloc, NotesState>(
         builder: (context, state) {
@@ -72,13 +142,17 @@ class _HomePageState extends State<HomePage> {
                               builder: (context) => AddNotesPage(
                                 toUpdate: true,
                                 title: allData[index]
-                                    .data()[AppConstants.notes_title],
-                                description: allData[index]
-                                    .data()[AppConstants.notes_description],
-                                id: allData[index].id,
+                                    .data()[AppNotesConstants.notes_title],
+                                description:
+                                    allData[index].data()[AppNotesConstants
+                                        .notes_description],
+                                userId: userId,
+                                notesId: allData[index].id,
                               ),
                             ),
                           );
+
+                          print(allData[index].id);
                         },
                         child: Container(
                           padding: EdgeInsets.all(9),
@@ -95,8 +169,8 @@ class _HomePageState extends State<HomePage> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      allData[index]
-                                          .data()[AppConstants.notes_title],
+                                      allData[index].data()[AppNotesConstants
+                                          .notes_title],
                                       style: TextStyle(
                                         fontSize: 21,
                                         fontWeight: FontWeight.bold,
@@ -108,7 +182,10 @@ class _HomePageState extends State<HomePage> {
                                   IconButton(
                                     onPressed: () {
                                       context.read<NotesBloc>().add(
-                                        DeleteNotesEvent(id: allData[index].id),
+                                        DeleteNotesEvent(
+                                          userId: userId,
+                                          notesId: allData[index].id,
+                                        ),
                                       );
                                     },
                                     icon: Icon(Icons.delete, color: Colors.red),
@@ -117,8 +194,8 @@ class _HomePageState extends State<HomePage> {
                               ),
                               Divider(),
                               Text(
-                                allData[index]
-                                    .data()[AppConstants.notes_description],
+                                allData[index].data()[AppNotesConstants
+                                    .notes_description],
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
@@ -133,7 +210,7 @@ class _HomePageState extends State<HomePage> {
                                   myDf.format(
                                     DateTime.fromMillisecondsSinceEpoch(
                                       allData[index]
-                                          .data()[AppConstants.created_at],
+                                          .data()[AppNotesConstants.created_at],
                                     ),
                                   ),
                                   style: TextStyle(fontWeight: FontWeight.bold),
@@ -170,7 +247,8 @@ class _HomePageState extends State<HomePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddNotesPage(toUpdate: false),
+              builder: (context) =>
+                  AddNotesPage(toUpdate: false, userId: userId),
             ),
           );
         },

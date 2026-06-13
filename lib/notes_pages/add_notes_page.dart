@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_notes_app/app_models/notes_model.dart';
 import 'package:firebase_notes_app/notes_bloc/notes_bloc.dart';
 import 'package:firebase_notes_app/notes_bloc/notes_event.dart';
 import 'package:flutter/material.dart';
@@ -11,14 +12,16 @@ class AddNotesPage extends StatefulWidget {
   bool toUpdate;
   String title;
   String description;
-  String id;
+  String userId;
+  String notesId;
 
   AddNotesPage({
     required this.toUpdate,
     this.title = "",
     this.description = "",
-    this.id = ""
-    });
+    this.userId = "",
+    this.notesId = "",
+  });
 }
 
 class _AddNotesPageState extends State<AddNotesPage> {
@@ -46,7 +49,8 @@ class _AddNotesPageState extends State<AddNotesPage> {
         toUpdate: widget.toUpdate,
         title: widget.title,
         description: widget.description,
-        id: widget.id
+        userId: widget.userId,
+        notedId: widget.notesId,
       ),
     );
   }
@@ -56,7 +60,8 @@ class _AddNotesPageState extends State<AddNotesPage> {
     int index = 0,
     String title = "",
     String description = "",
-    String id = "",
+    String userId = "",
+    String notedId = "",
   }) {
     if (toUpdate) {
       titleController.text = title;
@@ -96,21 +101,27 @@ class _AddNotesPageState extends State<AddNotesPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               OutlinedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (toUpdate) {
                     context.read<NotesBloc>().add(
                       UpdateNotesEvent(
                         title: titleController.text,
                         description: descriptionController.text,
-                        id: id
+                        updated_at: DateTime.now().millisecondsSinceEpoch,
+                        userId: userId,
+                        notesId: notedId,
                       ),
                     );
                   } else {
                     context.read<NotesBloc>().add(
                       AddNotesEvent(
-                        title: titleController.text,
-                        description: descriptionController.text,
-                        createdAt: DateTime.now().millisecondsSinceEpoch,
+                        userId: widget.userId,
+                        notesModel: NotesModel(
+                          title: titleController.text,
+                          description: descriptionController.text,
+                          created_at: DateTime.now().millisecondsSinceEpoch,
+                          updated_at: DateTime.now().millisecondsSinceEpoch,
+                        ),
                       ),
                     );
                   }

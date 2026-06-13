@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_notes_app/firebase_options.dart';
 import 'package:firebase_notes_app/notes_bloc/notes_bloc.dart';
-import 'package:firebase_notes_app/notes_pages/home_page.dart';
+import 'package:firebase_notes_app/on_boarding/splash_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: SplashPage(),
     );
   }
 }

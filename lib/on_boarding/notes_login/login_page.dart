@@ -65,16 +65,12 @@ class LoginPage extends StatelessWidget {
                       ),
                       hintText: "Enter your password here... ",
                       labelText: "Password",
-                      suffixIcon: isVisible
-                          ? Icon(Icons.visibility)
-                          : Icon(Icons.visibility_off),
+                      suffixIcon: IconButton(onPressed: (){isVisible = !isVisible;
+                      sS(() {});}, icon: isVisible ?  Icon(Icons.visibility)
+                          : Icon(Icons.visibility_off)),
                     ),
                     obscureText: !isVisible,
                     obscuringCharacter: "#",
-                    onTap: () {
-                      isVisible = !isVisible;
-                      sS(() {});
-                    },
                     validator: (formValue) {
                       RegExp varifyPassword = RegExp(
                         r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$',

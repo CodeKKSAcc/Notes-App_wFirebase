@@ -176,6 +176,8 @@ class _HomePageState extends State<HomePage> {
                                         fontWeight: FontWeight.bold,
                                         overflow: TextOverflow.ellipsis,
                                       ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
                                   ),
                                   SizedBox(width: 18),
